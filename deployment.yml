@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp-container
+        image: nagaraju1231/assignment:tagname
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4499
+      imagePullSecrets:
+      - name: mydockerhubsecret
