@@ -14,9 +14,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Login to Docker Registry
-      run: echo ${{ secrets.DOCKER_REGISTRY_PASSWORD }} | docker login -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin your-docker-registry
+      run: |
+        set -e
+        echo ${{ secrets.DOCKER_REGISTRY_PASSWORD }} | docker login -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} --password-stdin your-docker-registry
 
     - name: Build and push Docker image
       run: |
         docker build -t your-docker-registry/your-wisecow-image:latest .
+        docker tag your-docker-registry/your-wisecow-image:latest your-docker-registry/your-wisecow-image:${{ github.sha }}
         docker push your-docker-registry/your-wisecow-image:latest
+        docker push your-docker-registry/your-wisecow-image:${{ github.sha }}
