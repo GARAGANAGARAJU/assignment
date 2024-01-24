@@ -1,4 +1,4 @@
- # System Health Monitoring Script:
+ # 1) System Health Monitoring Script:
 
 #!/bin/bash
 
@@ -37,3 +37,92 @@ LOG_FILE="system_health.log"
    
 } >> "$LOG_FILE"
 
+
+# 2) Automated Backup Solution:
+ 
+#!/bin/bash
+
+# Configuration
+source_directory="/root/"
+destination_server="ubuntu@18.218.95.149:/home/ubuntu/"
+report_file="/home/ubuntu/report.log"
+
+# Run rsync for backup
+rsync -avz --delete -e "ssh -i /root/key.pem" "$source_directory" "$destination_server" > "$report_file" 2>&1
+use crontab to automate this 
+crontab -e 
+and mention 0 2 * * * /path/to/backup_script.sh
+
+
+# 3)  Log File Analyzer:
+
+#!/bin/bash
+
+log_file_path="/var/log/apache2/access.log"
+
+if [ ! -f "$log_file_path" ]; then
+    echo "Error: Log file not found!"
+    exit 1
+fi
+
+total_requests=0
+error_404_count=0
+declare -A page_requests
+declare -A ip_addresses
+
+while IFS= read -r line; do
+    status_code=$(echo "$line" | awk '{print $9}')
+    requested_page=$(echo "$line" | awk '{print $7}')
+    ip_address=$(echo "$line" | awk '{print $1}')
+
+    ((total_requests++))
+
+    if [ "$status_code" = "404" ]; then
+        ((error_404_count++))
+    fi
+
+    ((page_requests["$requested_page"]++))
+    ((ip_addresses["$ip_address"]++))
+
+done < "$log_file_path"
+
+echo "Total Requests: $total_requests"
+echo "404 Errors: $error_404_count"
+
+echo -e "\nMost Requested Pages:"
+for page in "${!page_requests[@]}"; do
+    count="${page_requests["$page"]}"
+    echo "$page: $count requests"
+done | sort -rnk3
+
+echo -e "\nIP Addresses with Most Requests:"
+for ip in "${!ip_addresses[@]}"; do
+    count="${ip_addresses["$ip"]}"
+    echo "$ip: $count requests"
+done | sort -rnk3
+
+
+# 4) Application Health Checker:
+
+#!/bin/bash
+
+check_application_health() {
+    url=$1
+    status_code=$(curl -s -o /dev/null -w "%{http_code}" $url)
+    
+    if [ $status_code -eq 200 ]; then
+        echo "Application is UP and running!"
+    else
+        echo "Application is DOWN with HTTP status code: $status_code"
+    fi
+}
+
+application_url="http://18.218.95.149:80"
+
+while true; do
+    result=$(check_application_health $application_url)
+    echo "$(date) - $result"
+    
+    # Adjust the sleep interval as needed (in seconds)
+    sleep 60
+done
