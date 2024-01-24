@@ -1,0 +1,40 @@
+# problem-2 :: System Health Monitoring Script
+
+
+
+#!/bin/bash
+
+CPU_THRESHOLD=80
+MEMORY_THRESHOLD_MB=100
+DISK_THRESHOLD_MB=10000
+
+LOG_FILE="system_health.log"
+
+{
+    
+    
+    # Get system metrics
+    CPU_USAGE=$(top -b -n 1 | grep "%Cpu(s)" | awk '{print $2}' | cut -d. -f1)
+    MEMORY_USAGE_MB=$(free -m | awk '/Mem/{print $3}')
+    DISK_USAGE_MB=$(df -m / | awk 'NR==2{print $3}')
+
+    # Check CPU usage
+    if [ "$CPU_USAGE" -gt "$CPU_THRESHOLD" ]; then
+        echo "High CPU usage detected: $CPU_USAGE%"
+        echo "Script completed at: $(date)"
+    fi
+
+    # Check memory usage
+    if [ "$MEMORY_USAGE_MB" -gt "$MEMORY_THRESHOLD_MB" ]; then
+        echo "High memory usage detected: $MEMORY_USAGE_MB MB"
+        echo "Script completed at: $(date)"
+    fi
+
+    # Check disk usage
+    if [ "$DISK_USAGE_MB" -gt "$DISK_THRESHOLD_MB" ]; then
+        echo "High disk usage detected: $DISK_USAGE_MB MB"
+        echo "Script completed at: $(date)"
+    fi
+
+   
+} >> "$LOG_FILE"
